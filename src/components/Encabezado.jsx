@@ -4,9 +4,10 @@ import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Offcanvas from "react-bootstrap/Offcanvas";
+import Button from "react-bootstrap/Button";
 import logo from "../assets/react.svg";
 import { useAuth } from "../database/authcontext";
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import "bootstrap-icons/font/bootstrap-icons.css";
 import "../App.css";
 
 const Encabezado = () => {
@@ -16,26 +17,16 @@ const Encabezado = () => {
 
   const handleLogout = async () => {
     try {
-      // Cerrar el offcanvas antes de proceder
       setIsCollapsed(false);
-
-      // Eliminar variables almacenadas en localStorage
       localStorage.removeItem("adminEmail");
       localStorage.removeItem("adminPassword");
-
-      // Cerrar sesión
       await logout();
-
-      // Redirigir al inicio
       navigate("/");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
   };
 
-  const handleToggle = () => setIsCollapsed(!isCollapsed);
-
-  // Funciones de navegación
   const handleNavigate = (path) => {
     navigate(path);
     setIsCollapsed(false);
@@ -48,7 +39,9 @@ const Encabezado = () => {
           <img alt="" src={logo} width="30" height="30" className="d-inline-block align-top" />{" "}
           <strong>La miel de los pajaritos</strong>
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="offcanvasNavbar-expand-sm" onClick={handleToggle} />
+        
+              
+        <Navbar.Toggle aria-controls="offcanvasNavbar-expand-sm" onClick={() => setIsCollapsed(!isCollapsed)} />
         <Navbar.Offcanvas
           id="offcanvasNavbar-expand-sm"
           aria-labelledby="offcanvasNavbarLabel-expand-sm"
@@ -57,38 +50,33 @@ const Encabezado = () => {
           onHide={() => setIsCollapsed(false)}
         >
           <Offcanvas.Header closeButton>
-            <Offcanvas.Title
-              id="offcanvasNavbarLabel-expand-sm"
-              className={isCollapsed ? "color-texto-marca" : "text-white"}
-            >
+            <Offcanvas.Title id="offcanvasNavbarLabel-expand-sm" className={isCollapsed ? "color-texto-marca" : "text-white"}>
               Menú
             </Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
             <Nav className="justify-content-end flex-grow-1 pe-3">
-
-              <Nav.Link
-                onClick={() => handleNavigate("/inicio")}
-                className={isCollapsed ? "color-texto-marca" : "text-white"}
-              >
+              <Nav.Link onClick={() => handleNavigate("/inicio")} className={isCollapsed ? "color-texto-marca" : "text-white"}>
                 {isCollapsed ? <i className="bi-house-door-fill me-2"></i> : null}
                 <strong>Inicio</strong>
               </Nav.Link>
+              <div className="d-flex gap-2">
+          <Nav.Link onClick={() => handleNavigate("/productos")} className="text-white">
+            Productos
+          </Nav.Link>
+          <Nav.Link onClick={() => handleNavigate("/categorias")} className="text-white">
+            Categorías
+          </Nav.Link>
+        </div>
               {isLoggedIn ? (
-                <>
-                  <Nav.Link onClick={handleLogout} className={isCollapsed ? "text-black" : "text-white"}>
-                    Cerrar Sesión
-                  </Nav.Link>
-                </>
+                <Nav.Link onClick={handleLogout} className={isCollapsed ? "text-black" : "text-white"}>
+                  Cerrar Sesión
+                </Nav.Link>
               ) : location.pathname === "/" && (
-                <Nav.Link
-                  onClick={() => handleNavigate("/")}
-                  className={isCollapsed ? "text-black" : "text-white"}
-                >
+                <Nav.Link onClick={() => handleNavigate("/")} className={isCollapsed ? "text-black" : "text-white"}>
                   Iniciar Sesión
                 </Nav.Link>
               )}
-
             </Nav>
           </Offcanvas.Body>
         </Navbar.Offcanvas>
