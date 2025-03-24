@@ -67,6 +67,9 @@ const Encabezado = () => {
           <Nav.Link onClick={() => handleNavigate("/categorias")} className="text-white">
             Categorías
           </Nav.Link>
+          <Nav.Link onClick={() => handleNavigate("")} className="text-white">
+            Catalogo
+          </Nav.Link>
         </div>
               {isLoggedIn ? (
                 <Nav.Link onClick={handleLogout} className={isCollapsed ? "text-black" : "text-white"}>
