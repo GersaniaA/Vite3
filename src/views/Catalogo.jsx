@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Form, Col } from "react-bootstrap";
+import { Container, Row, Form, Col, Button } from "react-bootstrap";
 import { db } from "../database/firebaseconfig";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import TarjetaProducto from "../components/catalogo/TarjetaProducto";
+import ModalEdicionProducto from "../components/productos/ModalEdicionProducto"; // Asegúrate de que la ruta sea correcta
 
-const Catalogo= () => {
+const Catalogo = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("Todas");
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [productoEditado, setProductoEditado] = useState(null);
 
   const productosCollection = collection(db, "productos");
   const categoriasCollection = collection(db, "categorias");
@@ -38,10 +42,52 @@ const Catalogo= () => {
     fetchData();
   }, []);
 
+  // Función para abrir el modal de edición con el producto seleccionado
+  const handleEditClick = (producto) => {
+    setProductoEditado(producto);
+    setShowEditModal(true);
+  };
+
+  // Función para manejar cambios en el formulario de edición
+  const handleEditInputChange = (e) => {
+    setProductoEditado({ ...productoEditado, [e.target.name]: e.target.value });
+  };
+
+  // Función para manejar la carga de una nueva imagen
+  const handleEditImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setProductoEditado({ ...productoEditado, imagen: imageUrl });
+    }
+  };
+
+  // Función para actualizar el producto en Firebase
+  const handleEditProducto = async () => {
+    if (!productoEditado) return;
+    try {
+      const productoRef = doc(db, "productos", productoEditado.id);
+      await updateDoc(productoRef, {
+        nombre: productoEditado.nombre,
+        precio: productoEditado.precio,
+        categoria: productoEditado.categoria,
+        imagen: productoEditado.imagen,
+      });
+
+      alert("Producto actualizado correctamente");
+      setShowEditModal(false);
+      fetchData(); // Recargar datos
+    } catch (error) {
+      console.error("Error al actualizar el producto:", error);
+      alert("Error al actualizar el producto");
+    }
+  };
+
   // Filtrar productos por categoría
-  const productosFiltrados = categoriaSeleccionada === "Todas"
-    ? productos
-    : productos.filter((producto) => producto.categoria === categoriaSeleccionada);
+  const productosFiltrados =
+    categoriaSeleccionada === "Todas"
+      ? productos
+      : productos.filter((producto) => producto.categoria === categoriaSeleccionada);
 
   return (
     <Container className="mt-5">
@@ -64,19 +110,33 @@ const Catalogo= () => {
               ))}
             </Form.Select>
           </Form.Group>
+          {/* Botón de actualización */}
+          <Button variant="primary" onClick={fetchData}>
+            Actualizar
+          </Button>
         </Col>
       </Row>
-
       {/* Catálogo de productos filtrados */}
       <Row>
         {productosFiltrados.length > 0 ? (
           productosFiltrados.map((producto) => (
-            <TarjetaProducto key={producto.id} producto={producto} />
+            <TarjetaProducto key={producto.id} producto={producto} onEdit={handleEditClick} />
           ))
         ) : (
           <p>No hay productos en esta categoría.</p>
         )}
       </Row>
+
+      {/* Modal de edición */}
+      <ModalEdicionProducto
+        showEditModal={showEditModal}
+        setShowEditModal={setShowEditModal}
+        productoEditado={productoEditado}
+        handleEditInputChange={handleEditInputChange}
+        handleEditImageChange={handleEditImageChange}
+        handleEditProducto={handleEditProducto}
+        categorias={categorias}
+      />
     </Container>
   );
 };

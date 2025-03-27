@@ -1,3 +1,4 @@
+// Importaciones
 import React, { useState, useEffect } from "react";
 import { Container, Button } from "react-bootstrap";
 import { db } from "../database/firebaseconfig";
@@ -10,7 +11,7 @@ import {
   doc,
 } from "firebase/firestore";
 import TablaProductos from "../components/productos/TablaProductos";
-import ModalRegistroProducto from "../components/productos/ModalRegistroProducto";
+import ModalRegistroProducto from "../components/productos/ModalRegistroProducto"
 import ModalEdicionProducto from "../components/productos/ModalEdicionProducto";
 import ModalEliminacionProducto from "../components/productos/ModalEliminacionProducto";
 
@@ -115,19 +116,25 @@ const Productos = () => {
 
   // Función para actualizar un producto existente (UPDATE)
   const handleEditProducto = async () => {
-    if (!productoEditado.nombre || !productoEditado.precio || !productoEditado.categoria) {
-      alert("Por favor, completa todos los campos requeridos.");
-      return;
-    }
     try {
       const productoRef = doc(db, "productos", productoEditado.id);
-      await updateDoc(productoRef, productoEditado);
-      setShowEditModal(false);
-      await fetchData();
+      await updateDoc(productoRef, {
+        nombre: productoEditado.nombre,
+        precio: productoEditado.precio,
+        categoria: productoEditado.categoria,
+        imagen: productoEditado.imagen, // Asegúrate de manejar la imagen correctamente
+      });
+  
+      alert("Producto actualizado correctamente");
+  
+      setShowEditModal(false); // Cierra el modal
+  
+      fetchData(); // ✅ Recargar los datos en el catálogo automáticamente
     } catch (error) {
-      console.error("Error al actualizar producto:", error);
+      console.error("Error al actualizar el producto:", error);
+      alert("Error al actualizar el producto");
     }
-  };
+  }
 
   // Función para eliminar un producto (DELETE)
   const handleDeleteProducto = async () => {

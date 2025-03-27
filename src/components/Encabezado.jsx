@@ -67,7 +67,7 @@ const Encabezado = () => {
           <Nav.Link onClick={() => handleNavigate("/categorias")} className="text-white">
             Categorías
           </Nav.Link>
-          <Nav.Link onClick={() => handleNavigate("")} className="text-white">
+          <Nav.Link onClick={() => handleNavigate("/catalogo")} className="text-white">
             Catalogo
           </Nav.Link>
         </div>
