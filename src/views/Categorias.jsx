@@ -1,166 +1,117 @@
 import React, { useState, useEffect } from "react";
 import { Container, Button } from "react-bootstrap";
 import { db } from "../database/firebaseconfig";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 
-// Importaciones de componentes personalizados
 import TablaCategorias from "../components/Categorias/TablaCategorias";
 import ModalRegistroCategoria from "../components/Categorias/ModalRegistroCategoria";
 import ModalEdicionCategoria from "../components/Categorias/ModalEdicionCategoria";
 import ModalEliminacionCategoria from "../components/Categorias/ModalEliminacionCategoria";
-
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 
 const Categorias = () => {
-  
-  // Estados para manejo de datos
   const [categorias, setCategorias] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [nuevaCategoria, setNuevaCategoria] = useState({
-    nombre: "",
-    descripcion: "",
-  });
-  const [categoriaEditada, setCategoriaEditada] = useState(null);
-  const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
+  const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [modal, setModal] = useState({ type: null, data: null });
 
-  // Referencia a la colección de categorías en Firestore
   const categoriasCollection = collection(db, "categorias");
 
-  // Función para obtener todas las categorías de Firestore
   const fetchCategorias = async () => {
     try {
       const data = await getDocs(categoriasCollection);
-      const fetchedCategorias = data.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      }));
+      const fetchedCategorias = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+      console.log("Categorías obtenidas:", fetchedCategorias);
       setCategorias(fetchedCategorias);
+      setCategoriasFiltradas(fetchedCategorias);
     } catch (error) {
       console.error("Error al obtener las categorías:", error);
     }
   };
 
-  // Hook useEffect para carga inicial de datos
   useEffect(() => {
     fetchCategorias();
   }, []);
 
-  // Manejador de cambios en inputs del formulario de nueva categoría
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNuevaCategoria((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleSearchChange = (e) => {
+    const text = e.target.value.toLowerCase();
+    setSearchText(text);
+    setCategoriasFiltradas(categorias.filter((categoria) =>
+      categoria.nombre.toLowerCase().includes(text) ||
+      categoria.descripcion.toLowerCase().includes(text)
+    ));
   };
 
-  // Manejador de cambios en inputs del formulario de edición
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setCategoriaEditada((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Función para agregar una nueva categoría (CREATE)
-  const handleAddCategoria = async () => {
-    if (!nuevaCategoria.nombre || !nuevaCategoria.descripcion) {
-      alert("Por favor, completa todos los campos antes de guardar.");
-      return;
-    }
+  const handleAddCategoria = async (nuevaCategoria) => {
     try {
       await addDoc(categoriasCollection, nuevaCategoria);
-      setShowModal(false);
-      setNuevaCategoria({ nombre: "", descripcion: "" });
+      setModal({ type: null, data: null });
       await fetchCategorias();
     } catch (error) {
       console.error("Error al agregar la categoría:", error);
     }
   };
 
-  // Función para actualizar una categoría existente (UPDATE)
-  const handleEditCategoria = async () => {
-    if (!categoriaEditada.nombre || !categoriaEditada.descripcion) {
-      alert("Por favor, completa todos los campos antes de actualizar.");
-      return;
-    }
+  const handleEditCategoria = async (categoriaEditada) => {
     try {
+      if (!categoriaEditada) return;
       const categoriaRef = doc(db, "categorias", categoriaEditada.id);
       await updateDoc(categoriaRef, categoriaEditada);
-      setShowEditModal(false);
+      setModal({ type: null, data: null });
       await fetchCategorias();
     } catch (error) {
       console.error("Error al actualizar la categoría:", error);
     }
   };
 
-  // Función para eliminar una categoría (DELETE)
-  const handleDeleteCategoria = async () => {
-    if (categoriaAEliminar) {
-      try {
-        const categoriaRef = doc(db, "categorias", categoriaAEliminar.id);
-        await deleteDoc(categoriaRef);
-        setShowDeleteModal(false);
-        await fetchCategorias();
-      } catch (error) {
-        console.error("Error al eliminar la categoría:", error);
-      }
+  const handleDeleteCategoria = async (categoriaId) => {
+    try {
+      if (!categoriaId) return;
+      const categoriaRef = doc(db, "categorias", categoriaId);
+      await deleteDoc(categoriaRef);
+      setModal({ type: null, data: null });
+      await fetchCategorias();
+    } catch (error) {
+      console.error("Error al eliminar la categoría:", error);
     }
   };
 
-  // Función para abrir el modal de edición con datos prellenados
-  const openEditModal = (categoria) => {
-    setCategoriaEditada({ ...categoria });
-    setShowEditModal(true);
-  };
+  console.log("Categorías filtradas:", categoriasFiltradas);
 
-  // Función para abrir el modal de eliminación
-  const openDeleteModal = (categoria) => {
-    setCategoriaAEliminar(categoria);
-    setShowDeleteModal(true);
-  };
-
-  // Renderizado del componente
   return (
     <Container className="mt-5">
-      <br />
       <h4>Gestión de Categorías</h4>
-      <Button className="mb-3" onClick={() => setShowModal(true)}>
+      <Button className="mb-3" onClick={() => setModal({ type: "add", data: null })}>
         Agregar categoría
       </Button>
+      <CuadroBusquedas searchText={searchText} handleSearchChange={handleSearchChange} />
       <TablaCategorias
-        categorias={categorias}
-        openEditModal={openEditModal}
-        openDeleteModal={openDeleteModal}
+        categorias={categoriasFiltradas}
+        openEditModal={(categoria) => setModal({ type: "edit", data: categoria })}
+        openDeleteModal={(categoria) => setModal({ type: "delete", data: categoria })}
       />
-      <ModalRegistroCategoria
-        showModal={showModal}
-        setShowModal={setShowModal}
-        nuevaCategoria={nuevaCategoria}
-        handleInputChange={handleInputChange}
-        handleAddCategoria={handleAddCategoria}
-      />
-      <ModalEdicionCategoria
-        showEditModal={showEditModal}
-        setShowEditModal={setShowEditModal}
-        categoriaEditada={categoriaEditada}
-        handleEditInputChange={handleEditInputChange}
-        handleEditCategoria={handleEditCategoria}
-      />
-      <ModalEliminacionCategoria
-        showDeleteModal={showDeleteModal}
-        setShowDeleteModal={setShowDeleteModal}
-        handleDeleteCategoria={handleDeleteCategoria}
-      />
+      {modal.type === "add" && (
+        <ModalRegistroCategoria
+          showModal={true}
+          setShowModal={() => setModal({ type: null, data: null })}
+          handleAddCategoria={handleAddCategoria}
+        />
+      )}
+      {modal.type === "edit" && modal.data && (
+        <ModalEdicionCategoria
+          showEditModal={true}
+          setShowEditModal={() => setModal({ type: null, data: null })}
+          categoriaEditada={modal.data}
+          handleEditCategoria={handleEditCategoria}
+        />
+      )}
+      {modal.type === "delete" && modal.data && (
+        <ModalEliminacionCategoria
+          showDeleteModal={true}
+          setShowDeleteModal={() => setModal({ type: null, data: null })}
+          handleDeleteCategoria={() => handleDeleteCategoria(modal.data.id)}
+        />
+      )}
     </Container>
   );
 };

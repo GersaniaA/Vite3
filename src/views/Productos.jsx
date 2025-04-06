@@ -10,14 +10,19 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
+
 import TablaProductos from "../components/productos/TablaProductos";
-import ModalRegistroProducto from "../components/productos/ModalRegistroProducto"
+import ModalRegistroProducto from "../components/productos/ModalRegistroProducto";
 import ModalEdicionProducto from "../components/productos/ModalEdicionProducto";
 import ModalEliminacionProducto from "../components/productos/ModalEliminacionProducto";
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas"; // <-- Añadido
 
 const Productos = () => {
-  // Estados para manejo de datos
+  // Estados
   const [productos, setProductos] = useState([]);
+  const [productosFiltrados, setProductosFiltrados] = useState([]); // <-- Añadido
+  const [searchText, setSearchText] = useState(""); // <-- Añadido
+
   const [categorias, setCategorias] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -31,22 +36,19 @@ const Productos = () => {
   const [productoEditado, setProductoEditado] = useState(null);
   const [productoAEliminar, setProductoAEliminar] = useState(null);
 
-  // Referencia a las colecciones en Firestore
   const productosCollection = collection(db, "productos");
   const categoriasCollection = collection(db, "categorias");
 
-  // Función para obtener todas las categorías y productos de Firestore
   const fetchData = async () => {
     try {
-      // Obtener productos
       const productosData = await getDocs(productosCollection);
       const fetchedProductos = productosData.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
       }));
       setProductos(fetchedProductos);
+      setProductosFiltrados(fetchedProductos); // <-- Añadido
 
-      // Obtener categorías
       const categoriasData = await getDocs(categoriasCollection);
       const fetchedCategorias = categoriasData.docs.map((doc) => ({
         ...doc.data(),
@@ -58,24 +60,34 @@ const Productos = () => {
     }
   };
 
-  // Hook useEffect para carga inicial de datos
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Manejador de cambios en inputs del formulario de nuevo producto
+  // Manejador de búsqueda
+  const handleSearchChange = (e) => {
+    const text = e.target.value.toLowerCase();
+    setSearchText(text);
+    setProductosFiltrados(
+      productos.filter(
+        (producto) =>
+          producto.nombre.toLowerCase().includes(text) ||
+          producto.precio.toLowerCase().includes(text) ||
+          producto.categoria.toLowerCase().includes(text)
+      )
+    );
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNuevoProducto((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Manejador de cambios en inputs del formulario de edición
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
     setProductoEditado((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Manejador para la carga de imágenes
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -98,7 +110,6 @@ const Productos = () => {
     }
   };
 
-  // Función para agregar un nuevo producto (CREATE)
   const handleAddProducto = async () => {
     if (!nuevoProducto.nombre || !nuevoProducto.precio || !nuevoProducto.categoria) {
       alert("Por favor, completa todos los campos requeridos.");
@@ -114,7 +125,6 @@ const Productos = () => {
     }
   };
 
-  // Función para actualizar un producto existente (UPDATE)
   const handleEditProducto = async () => {
     try {
       const productoRef = doc(db, "productos", productoEditado.id);
@@ -122,21 +132,18 @@ const Productos = () => {
         nombre: productoEditado.nombre,
         precio: productoEditado.precio,
         categoria: productoEditado.categoria,
-        imagen: productoEditado.imagen, // Asegúrate de manejar la imagen correctamente
+        imagen: productoEditado.imagen,
       });
-  
+
       alert("Producto actualizado correctamente");
-  
-      setShowEditModal(false); // Cierra el modal
-  
-      fetchData(); // ✅ Recargar los datos en el catálogo automáticamente
+      setShowEditModal(false);
+      fetchData();
     } catch (error) {
       console.error("Error al actualizar el producto:", error);
       alert("Error al actualizar el producto");
     }
-  }
+  };
 
-  // Función para eliminar un producto (DELETE)
   const handleDeleteProducto = async () => {
     if (productoAEliminar) {
       try {
@@ -150,19 +157,16 @@ const Productos = () => {
     }
   };
 
-  // Función para abrir el modal de edición con datos prellenados
   const openEditModal = (producto) => {
     setProductoEditado({ ...producto });
     setShowEditModal(true);
   };
 
-  // Función para abrir el modal de eliminación
   const openDeleteModal = (producto) => {
     setProductoAEliminar(producto);
     setShowDeleteModal(true);
   };
 
-  // Renderizado del componente
   return (
     <Container className="mt-5">
       <br />
@@ -170,8 +174,9 @@ const Productos = () => {
       <Button className="mb-3" onClick={() => setShowModal(true)}>
         Agregar producto
       </Button>
+      <CuadroBusquedas searchText={searchText} handleSearchChange={handleSearchChange} />
       <TablaProductos
-        productos={productos}
+        productos={productosFiltrados}
         openEditModal={openEditModal}
         openDeleteModal={openDeleteModal}
       />
