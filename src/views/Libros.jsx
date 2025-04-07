@@ -23,7 +23,7 @@ import ModalEdicionLibro from "../components/libros/ModalEdicionLibro";
 import ModalEliminacionLibro from "../components/libros/ModalEliminacionLibro";
 import CuadroBusquedas from "../components/busquedas/CuadroBusquedas"; // Componente de búsqueda
 import { useAuth } from "../database/authcontext";
-import Paginacion from "../ordenamiento/Paginacion";
+import Paginacion from "../components/ordenamiento/Paginacion";
 
 const Libros = () => {
   const [libros, setLibros] = useState([]);
