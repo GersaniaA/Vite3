@@ -1,4 +1,3 @@
-// Importaciones
 import React, { useState, useEffect } from "react";
 import { Container, Button } from "react-bootstrap";
 import { db } from "../database/firebaseconfig";
@@ -15,14 +14,12 @@ import TablaProductos from "../components/productos/TablaProductos";
 import ModalRegistroProducto from "../components/productos/ModalRegistroProducto";
 import ModalEdicionProducto from "../components/productos/ModalEdicionProducto";
 import ModalEliminacionProducto from "../components/productos/ModalEliminacionProducto";
-import CuadroBusquedas from "../components/busquedas/CuadroBusquedas"; // <-- Añadido
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 
 const Productos = () => {
-  // Estados
   const [productos, setProductos] = useState([]);
-  const [productosFiltrados, setProductosFiltrados] = useState([]); // <-- Añadido
-  const [searchText, setSearchText] = useState(""); // <-- Añadido
-
+  const [productosFiltrados, setProductosFiltrados] = useState([]);
+  const [searchText, setSearchText] = useState("");
   const [categorias, setCategorias] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -35,9 +32,16 @@ const Productos = () => {
   });
   const [productoEditado, setProductoEditado] = useState(null);
   const [productoAEliminar, setProductoAEliminar] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const productosCollection = collection(db, "productos");
   const categoriasCollection = collection(db, "categorias");
+
+  const paginatedProductos = productosFiltrados.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const fetchData = async () => {
     try {
@@ -47,7 +51,7 @@ const Productos = () => {
         id: doc.id,
       }));
       setProductos(fetchedProductos);
-      setProductosFiltrados(fetchedProductos); // <-- Añadido
+      setProductosFiltrados(fetchedProductos);
 
       const categoriasData = await getDocs(categoriasCollection);
       const fetchedCategorias = categoriasData.docs.map((doc) => ({
@@ -64,10 +68,10 @@ const Productos = () => {
     fetchData();
   }, []);
 
-  // Manejador de búsqueda
   const handleSearchChange = (e) => {
     const text = e.target.value.toLowerCase();
     setSearchText(text);
+    setCurrentPage(1); // Resetear página al buscar
     setProductosFiltrados(
       productos.filter(
         (producto) =>
@@ -174,11 +178,18 @@ const Productos = () => {
       <Button className="mb-3" onClick={() => setShowModal(true)}>
         Agregar producto
       </Button>
-      <CuadroBusquedas searchText={searchText} handleSearchChange={handleSearchChange} />
+      <CuadroBusquedas
+        searchText={searchText}
+        handleSearchChange={handleSearchChange}
+      />
       <TablaProductos
-        productos={productosFiltrados}
         openEditModal={openEditModal}
         openDeleteModal={openDeleteModal}
+        productos={paginatedProductos}
+        totalItems={productosFiltrados.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
       />
       <ModalRegistroProducto
         showModal={showModal}

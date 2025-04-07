@@ -14,6 +14,8 @@ const Categorias = () => {
   const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [modal, setModal] = useState({ type: null, data: null });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Número de productos por página
 
   const categoriasCollection = collection(db, "categorias");
 
