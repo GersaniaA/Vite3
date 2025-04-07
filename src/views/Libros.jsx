@@ -23,6 +23,7 @@ import ModalEdicionLibro from "../components/libros/ModalEdicionLibro";
 import ModalEliminacionLibro from "../components/libros/ModalEliminacionLibro";
 import CuadroBusquedas from "../components/busquedas/CuadroBusquedas"; // Componente de búsqueda
 import { useAuth } from "../database/authcontext";
+import Paginacion from "../ordenamiento/Paginacion";
 
 const Libros = () => {
   const [libros, setLibros] = useState([]);
@@ -41,6 +42,8 @@ const Libros = () => {
   const [libroAEliminar, setLibroAEliminar] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Número de productos por página
 
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
@@ -81,6 +84,7 @@ const Libros = () => {
           libro.genero.toLowerCase().includes(text)
       )
     );
+    setCurrentPage(1); // Reiniciar a la primera página al buscar
   };
 
   const handleInputChange = (e) => {
@@ -217,6 +221,12 @@ const Libros = () => {
     setShowDeleteModal(true);
   };
 
+  // Paginación
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const librosPaginados = librosFiltrados.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(librosFiltrados.length / itemsPerPage);
+
   return (
     <Container className="mt-5">
       <br />
@@ -227,9 +237,14 @@ const Libros = () => {
       </Button>
       <CuadroBusquedas searchText={searchText} handleSearchChange={handleSearchChange} />
       <TablaLibros
-        libros={librosFiltrados}
+        libros={librosPaginados}
         openEditModal={openEditModal}
         openDeleteModal={openDeleteModal}
+      />
+      <Paginacion
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
       />
       <ModalRegistroLibro
         showModal={showModal}

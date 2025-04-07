@@ -1,7 +1,6 @@
 import React from "react";
 import { Table, Button } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import Paginacion from "../ordenamiento/Paginacion";
 
 const TablaLibros = ({ libros, openEditModal, openDeleteModal }) => {
   return (

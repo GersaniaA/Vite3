@@ -8,6 +8,7 @@ import ModalRegistroCategoria from "../components/Categorias/ModalRegistroCatego
 import ModalEdicionCategoria from "../components/Categorias/ModalEdicionCategoria";
 import ModalEliminacionCategoria from "../components/Categorias/ModalEliminacionCategoria";
 import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
+import Paginacion from "../components/ordenamiento/Paginacion"; // <-- Añadido
 
 const Categorias = () => {
   const [categorias, setCategorias] = useState([]);
@@ -15,7 +16,7 @@ const Categorias = () => {
   const [searchText, setSearchText] = useState("");
   const [modal, setModal] = useState({ type: null, data: null });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Número de productos por página
+  const itemsPerPage = 5;
 
   const categoriasCollection = collection(db, "categorias");
 
@@ -23,7 +24,6 @@ const Categorias = () => {
     try {
       const data = await getDocs(categoriasCollection);
       const fetchedCategorias = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      console.log("Categorías obtenidas:", fetchedCategorias);
       setCategorias(fetchedCategorias);
       setCategoriasFiltradas(fetchedCategorias);
     } catch (error) {
@@ -38,10 +38,12 @@ const Categorias = () => {
   const handleSearchChange = (e) => {
     const text = e.target.value.toLowerCase();
     setSearchText(text);
-    setCategoriasFiltradas(categorias.filter((categoria) =>
+    const filtradas = categorias.filter((categoria) =>
       categoria.nombre.toLowerCase().includes(text) ||
       categoria.descripcion.toLowerCase().includes(text)
-    ));
+    );
+    setCategoriasFiltradas(filtradas);
+    setCurrentPage(1); // Reiniciar a la primera página
   };
 
   const handleAddCategoria = async (nuevaCategoria) => {
@@ -78,7 +80,11 @@ const Categorias = () => {
     }
   };
 
-  console.log("Categorías filtradas:", categoriasFiltradas);
+  // Paginación de categorías filtradas
+  const totalItems = categoriasFiltradas.length;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = currentPage * itemsPerPage;
+  const categoriasPaginadas = categoriasFiltradas.slice(startIndex, endIndex);
 
   return (
     <Container className="mt-5">
@@ -86,12 +92,24 @@ const Categorias = () => {
       <Button className="mb-3" onClick={() => setModal({ type: "add", data: null })}>
         Agregar categoría
       </Button>
+
       <CuadroBusquedas searchText={searchText} handleSearchChange={handleSearchChange} />
+
       <TablaCategorias
-        categorias={categoriasFiltradas}
+        categorias={categoriasPaginadas}
         openEditModal={(categoria) => setModal({ type: "edit", data: categoria })}
         openDeleteModal={(categoria) => setModal({ type: "delete", data: categoria })}
       />
+
+      {/* Paginación */}
+      <Paginacion
+        itemsPerPage={itemsPerPage}
+        totalItems={totalItems}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
+
+      {/* Modales */}
       {modal.type === "add" && (
         <ModalRegistroCategoria
           showModal={true}
