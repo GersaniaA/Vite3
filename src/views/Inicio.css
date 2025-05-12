@@ -1,0 +1,16 @@
+.inicio-fondo {
+  background: linear-gradient(135deg, #e0f7fa, #ffe0b2);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sombra {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.card {
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: scale(1.01);
+}

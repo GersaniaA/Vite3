@@ -10,9 +10,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: [
-        'ferreteria_selva_logo.png',
-        'icons/icon-192x192.png',
-        'icons/icon-512x512.png'
+        'licoreria.png',
+        'icon-192x192.png',
+        'icon-512x512.png'
       ],
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico,webmanifest}'],
