@@ -1,17 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table, Button, Image } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Paginacion from "../ordenamiento/Paginacion";
 
-const TablaProductos = ({
-  productos,
-  openEditModal,
-  openDeleteModal,
-  totalItems,
-  itemsPerPage,
-  currentPage,
-  setCurrentPage
-}) => {
+const TablaProductos = ({ productos, openEditModal, openDeleteModal, openQRModal, handleCopy }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalItems = productos.length;
+
   return (
     <>
       <Table striped bordered hover responsive>
@@ -47,9 +43,25 @@ const TablaProductos = ({
                 <Button
                   variant="outline-danger"
                   size="sm"
+                  className="me-2"
                   onClick={() => openDeleteModal(producto)}
                 >
                   <i className="bi bi-trash"></i>
+                </Button>
+                <Button
+                  variant="outline-dark"
+                  size="sm"
+                  className="me-2"
+                  onClick={() => openQRModal(producto.pdfUrl)}
+                >
+                  <i className="bi bi-qr-code"></i>
+                </Button>
+                <Button
+                  variant="outline-info"
+                  size="sm"
+                  onClick={() => handleCopy(producto)}
+                >
+                  <i className="bi bi-clipboard"></i>
                 </Button>
               </td>
             </tr>
