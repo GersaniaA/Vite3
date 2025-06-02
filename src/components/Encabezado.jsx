@@ -108,6 +108,10 @@ const Encabezado = () => {
                 {t('menu.estadisticas')}
               </Nav.Link>
 
+              <Nav.Link onClick={() => handleNavigate("/Empleados")} className={isCollapsed ? "color-texto-marca" : "text-white"}>
+                {t('menu.empleados')}
+              </Nav.Link>
+
               <NavDropdown
                 title={
                   <span>
