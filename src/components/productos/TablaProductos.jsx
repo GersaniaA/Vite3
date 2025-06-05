@@ -3,6 +3,7 @@ import { Table, Button, Image } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import Paginacion from "../ordenamiento/Paginacion";
 
+
 const TablaProductos = ({ productos, openEditModal, openDeleteModal, openQRModal, handleCopy }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -68,6 +69,7 @@ const TablaProductos = ({ productos, openEditModal, openDeleteModal, openQRModal
           ))}
         </tbody>
       </Table>
+      
 
       <Paginacion
         itemsPerPage={itemsPerPage}

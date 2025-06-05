@@ -52,7 +52,7 @@ const Encabezado = () => {
             height="30"
             className="d-inline-block align-top"
           />{" "}
-          <strong>Ferretería</strong>
+          <strong>La miel de los pajaritos</strong>
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="offcanvasNavbar-expand-sm" />
@@ -104,11 +104,11 @@ const Encabezado = () => {
                 {t('menu.pronunciacion')}
               </Nav.Link>
 
-              <Nav.Link onClick={() => handleNavigate("/Estadisticas")} className={isCollapsed ? "color-texto-marca" : "text-white"}>
+              <Nav.Link onClick={() => handleNavigate("/estadisticas")} className={isCollapsed ? "color-texto-marca" : "text-white"}>
                 {t('menu.estadisticas')}
               </Nav.Link>
 
-              <Nav.Link onClick={() => handleNavigate("/Empleados")} className={isCollapsed ? "color-texto-marca" : "text-white"}>
+              <Nav.Link onClick={() => handleNavigate("/empleados")} className={isCollapsed ? "color-texto-marca" : "text-white"}>
                 {t('menu.empleados')}
               </Nav.Link>
 
